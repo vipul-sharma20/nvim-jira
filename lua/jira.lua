@@ -8,6 +8,7 @@
 --]]
 
 require "os"
+results = nil
 
 Jira = {host = nil, username = nil, accessToken = nil }
 
@@ -125,7 +126,9 @@ local function update_view(direction)
   if position < 0 then position = 0 end
 
   jira = Jira:new{host = 'https://vernacular-ai.atlassian.net/rest/api/3'}
-  results = jira:getMyIssues("PCK")
+  if results == nil then
+    results = jira:getMyIssues("PCK")
+  end
 
   local result = {}
   for idx, issue in ipairs(results) do
@@ -189,8 +192,14 @@ local function jira()
   -- connect()
 end
 
+local function jiraReload()
+    results = nil
+    jira()
+end
+
 return {
   jira = jira,
+  jiraReload = jiraReload,
   update_view = update_view,
   open_file = open_file,
   move_cursor = move_cursor,
