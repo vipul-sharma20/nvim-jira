@@ -1,12 +1,3 @@
---[[
-    TODO:
-    - Learn Lua
-    - Jira base class
-    - get/post request helper methods
-    - Get my issues with JQL
-    - Convert to vim plugin
---]]
-
 require "os"
 results = nil
 cjson = require "cjson"
@@ -78,7 +69,7 @@ function Jira:postComment (message, issueId)
 end
 
 function Jira:getMyIssues (project)
-    url = self.host .. "/search?maxResults=100&jql=assignee=currentuser()%26resolution=Unresolved%26project=" .. project
+    url = self.host .. "/search?maxResults=100&jql=watcher+=+currentuser()%26resolution=Unresolved%26project=" .. project
     response, responseCode = self:httpGet(url)
 
     local responseTable = cjson.decode(response)
@@ -174,8 +165,10 @@ local function update_view(direction)
 
     local result = {}
     for idx, issue in ipairs(results) do
-        result[idx] = "  " .. issue.key .. ' | ' .. issue.fields.summary .. ' [' .. issue.fields.status.name .. ']'
+        issue_line = string.format('  %s <%s> | %s [%s]', issue.key, issue.fields.assignee.displayName, issue.fields.summary, issue.fields.status.name)
+        result[idx] = issue_line
     end
+    -- api.nvim_buf_set_lines(buf, 1, 2, false, {center('HEAD~'..position)})
     api.nvim_buf_set_lines(buf, 3, -1, false, result)
 
     api.nvim_buf_add_highlight(buf, -1, 'whidSubHeader', 1, 0, -1)
@@ -256,17 +249,20 @@ local function filterComments(commentsTable)
         table.insert(render, underline)
         table.insert(render, '')
         for content_idx, content in ipairs(comment.body.content) do
+            local comment_line = ''
             for text_idx, text in ipairs(content.content) do
                 if text.type == "paragraph" then
-                    table.insert(render, cjson.encode(text.paragraph))
+                    table.insert(render, comment_line .. text.paragraph)
+                    comment_line = ''
                 elseif text.type == "text" then
                     if text.text ~= ' ' then
-                        table.insert(render, cjson.encode(text.text))
+                        table.insert(render, comment_line .. text.text)
+                        comment_line = ''
                     end
                 elseif text.type == "hardBreak" then
                     table.insert(render, '')
                 elseif text.type == "mention" then
-                    table.insert(render, text.attrs.text)
+                    comment_line = comment_line .. string.format("[%s]", text.attrs.text)
                 else
                 end
                 if text.text == nil then
