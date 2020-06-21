@@ -44,6 +44,39 @@ function Jira:httpGet (url)
     return table.concat(responseTable), responseCode
 end
 
+function Jira:httpPost (url, body)
+    mime = require("mime")
+
+    headers = {
+        authorization = "Basic " .. mime.b64(string.format('%s:%s', self.username, self.accessToken)),
+        ["Content-Type"] = "application/json",
+        ["Content-Length"] = body:len()
+    }
+
+    local ltn12 = require("ltn12")
+    local io = require("io")
+    responseTable = {}
+    response, responseCode, c, h = self.http.request {
+        url = url,
+        method = "POST",
+        headers = headers,
+        sink = ltn12.sink.table(responseTable),
+        source = ltn12.source.string(body),
+    }
+
+    return table.concat(responseTable), responseCode
+end
+
+function Jira:postComment (message, issueId)
+    local url = self.host .. string.format("/issue/%s/comment", issueId)
+    local body = string.format([[ {"body": { "type": "doc", "version": 1, "content": [ { "type": "paragraph", "content": [ { "text": "%s", "type": "text" } ] } ] } } ]], message)
+
+    response, responseCode = self:httpPost(url, body)
+    if responseCode == 201 then
+        print('Comment posted')
+    end
+end
+
 function Jira:getMyIssues (project)
     url = self.host .. "/search?maxResults=100&jql=assignee=currentuser()%26resolution=Unresolved%26project=" .. project
     response, responseCode = self:httpGet(url)
@@ -172,11 +205,18 @@ local function move_cursor()
    api.nvim_win_set_cursor(win, {new_pos, 0})
 end
 
+local function publish_comment()
+    local s = api.nvim_get_current_line()
+    jira:postComment(s, current_issue)
+end
+
 local function set_mappings()
     local mappings = {
       ['['] = 'update_view(-1)',
       [']'] = 'update_view(1)',
       ['<cr>'] = 'open_file()',
+      ['\\com'] = 'insert_comment()',
+      [':w'] = 'publish_comment()',
       q = 'close_window()',
     }
 
@@ -186,7 +226,7 @@ local function set_mappings()
           })
     end
     local other_chars = {
-      'a', 'c', 'g', 'i', 'n', 'o', 'p', 'r', 's', 't', 'v', 'x', 'y', 'z'
+      'a', 'c', 'g', 'n', 'o', 'p', 'r', 's', 't', 'v', 'x', 'y', 'z'
     }
     for k,v in ipairs(other_chars) do
         api.nvim_buf_set_keymap(buf, 'n', v, '', { nowait = true, noremap = true, silent = true })
@@ -239,6 +279,15 @@ local function filterComments(commentsTable)
     return render
 end
 
+local function insert_comment()
+    local s = api.nvim_get_current_line()
+    close_window()
+
+    splits = split(s, '|')
+    current_issue = current_issue or splits[1]:gsub('%s+', '')
+    init()
+end
+
 local function open_file()
     local s = api.nvim_get_current_line()
 
@@ -246,7 +295,8 @@ local function open_file()
     close_window()
     init()
 
-    response = jira:getIssueComments(splits[1]:gsub('%s+', ''))
+    current_issue = splits[1]:gsub('%s+', '')
+    response = jira:getIssueComments(current_issue)
     comments = filterComments(response)
 
     api.nvim_buf_set_lines(buf, 0, 100, false, comments)
@@ -269,5 +319,7 @@ return {
   update_view = update_view,
   open_file = open_file,
   move_cursor = move_cursor,
-  close_window = close_window
+  close_window = close_window,
+  insert_comment = insert_comment,
+  publish_comment = publish_comment
 }
