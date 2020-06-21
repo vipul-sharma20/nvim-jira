@@ -158,7 +158,6 @@ function open_issue()
     init()
 
     current_issue = splits[1]:gsub('%s+', '')
-    print(current_issue)
     response = jira:get_issue_comments(current_issue)
     comments = get_formatted_comments(response)
 
@@ -305,7 +304,7 @@ end
 
 -- Create Jira instance
 function connect()
-    jira = Jira:new{host = 'https://vernacular-ai.atlassian.net/rest/api/3'}
+    jira = Jira:new{host = string.format("%s/rest/api/3", os.getenv("JIRA_HOST"))}
 end
 
 -- Initialize
