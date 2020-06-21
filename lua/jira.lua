@@ -45,11 +45,10 @@ function Jira:httpGet (url)
 end
 
 function Jira:getMyIssues (project)
-    url = self.host .. "/search?jql=assignee=currentuser()%26project=" .. project
+    url = self.host .. "/search?maxResults=100&jql=assignee=currentuser()%26resolution=Unresolved%26project=" .. project
     response, responseCode = self:httpGet(url)
 
-    local json = require('cjson')
-    local responseTable = json.decode(response)
+    local responseTable = cjson.decode(response)
 
     return responseTable.issues
 end
@@ -142,9 +141,8 @@ local function update_view(direction)
 
     local result = {}
     for idx, issue in ipairs(results) do
-        result[idx] = "  " .. issue.key .. ' | ' .. issue.fields.summary
+        result[idx] = "  " .. issue.key .. ' | ' .. issue.fields.summary .. ' [' .. issue.fields.status.name .. ']'
     end
-
     -- api.nvim_buf_set_lines(buf, 1, 2, false, {center('HEAD~'..position)})
     api.nvim_buf_set_lines(buf, 3, -1, false, result)
 
