@@ -17,7 +17,7 @@ function Jira:new (obj, username, accessToken)
     obj = obj or {}
     setmetatable(obj, self)
     self.__index = self
-    self.host = host
+    self.host = host or os.getenv("JIRA_HOST")
     self.username = username or os.getenv("JIRA_USERNAME")
     self.accessToken = accessToken or os.getenv("JIRA_TOKEN")
     self.http = require("ssl.https")
@@ -176,7 +176,6 @@ local function update_view(direction)
     for idx, issue in ipairs(results) do
         result[idx] = "  " .. issue.key .. ' | ' .. issue.fields.summary .. ' [' .. issue.fields.status.name .. ']'
     end
-    -- api.nvim_buf_set_lines(buf, 1, 2, false, {center('HEAD~'..position)})
     api.nvim_buf_set_lines(buf, 3, -1, false, result)
 
     api.nvim_buf_add_highlight(buf, -1, 'whidSubHeader', 1, 0, -1)
@@ -217,6 +216,7 @@ local function set_mappings()
       ['<cr>'] = 'open_file()',
       ['\\com'] = 'insert_comment()',
       [':w'] = 'publish_comment()',
+      ['\\web'] = 'open_in_web()',
       q = 'close_window()',
     }
 
@@ -283,15 +283,25 @@ local function insert_comment()
     local s = api.nvim_get_current_line()
     close_window()
 
-    splits = split(s, '|')
+    splits = split(s, ' ')
     current_issue = current_issue or splits[1]:gsub('%s+', '')
     init()
+end
+
+local function open_in_web()
+    local s = api.nvim_get_current_line()
+    close_window()
+
+    splits = split(s, ' ')
+    current_issue = current_issue or splits[1]:gsub('%s+', '')
+    local url = string.format("%s/browse/%s", os.getenv("JIRA_HOST"), current_issue)
+    api.nvim_command(string.format(':!open %s', url))
 end
 
 local function open_file()
     local s = api.nvim_get_current_line()
 
-    splits = split(s, '|')
+    splits = split(s, ' ')
     close_window()
     init()
 
@@ -321,5 +331,6 @@ return {
   move_cursor = move_cursor,
   close_window = close_window,
   insert_comment = insert_comment,
-  publish_comment = publish_comment
+  publish_comment = publish_comment,
+  open_in_web = open_in_web
 }
