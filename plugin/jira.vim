@@ -7,8 +7,8 @@ hi def link JiraHeader      Number
 hi def link JiraSubHeader   Identifier
 hi jiraCursorLine ctermbg=238 cterm=none
 
-command! Jira lua require'jira'.jira()
-command! JiraReload lua require'jira'.jiraReload()
+command! Jira lua require'jira'.jira_load()
+command! JiraReload lua require'jira'.jira_reload()
 
 let &cpo = s:save_cpo
 unlet s:save_cpo
