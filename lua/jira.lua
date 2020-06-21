@@ -9,6 +9,7 @@
 
 require "os"
 results = nil
+cjson = require "cjson"
 
 Jira = {host = nil, username = nil, accessToken = nil }
 
@@ -179,7 +180,6 @@ local function set_mappings()
       [']'] = 'update_view(1)',
       ['<cr>'] = 'open_file()',
       q = 'close_window()',
-      k = 'move_cursor()'
     }
 
     for k,v in pairs(mappings) do
@@ -203,6 +203,44 @@ local function init()
     set_mappings()
 end
 
+local function filterComments(commentsTable)
+    render = {}
+
+    for comment_idx, comment in ipairs(commentsTable) do
+        local author = comment.author.displayName .. ' posted at: ' .. comment.created
+        local underline = ''
+        for i=1,string.len(author) do
+            underline = underline .. '='
+        end
+
+        table.insert(render, underline)
+        table.insert(render, author)
+        table.insert(render, underline)
+        table.insert(render, '')
+        for content_idx, content in ipairs(comment.body.content) do
+            for text_idx, text in ipairs(content.content) do
+                if text.type == "paragraph" then
+                    table.insert(render, cjson.encode(text.paragraph))
+                elseif text.type == "text" then
+                    if text.text ~= ' ' then
+                        table.insert(render, cjson.encode(text.text))
+                    end
+                elseif text.type == "hardBreak" then
+                    table.insert(render, '')
+                elseif text.type == "mention" then
+                    table.insert(render, text.attrs.text)
+                else
+                end
+                if text.text == nil then
+                    table.insert(render, '')
+                end
+            end
+        end
+        table.insert(render, '')
+    end
+    return render
+end
+
 local function open_file()
     local s = api.nvim_get_current_line()
 
@@ -211,9 +249,9 @@ local function open_file()
     init()
 
     response = jira:getIssueComments(splits[1]:gsub('%s+', ''))
-    local cjson = require "cjson"
+    comments = filterComments(response)
 
-    api.nvim_buf_set_lines(buf, 0, 10, false, {cjson.encode(response)})
+    api.nvim_buf_set_lines(buf, 0, 100, false, comments)
 end
 
 local function jira()
