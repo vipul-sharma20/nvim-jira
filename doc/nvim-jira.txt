@@ -1,0 +1,107 @@
+*nvim-jira.txt* A Jira plugin for nvim
+*nvim-jira*
+             _                 _ _           ~
+            (_)               (_|_)          ~
+  _ ____   ___ _ __ ___ ______ _ _ _ __ __ _ ~
+ | '_ \ \ / / | '_ ` _ \______| | | '__/ _` |~
+ | | | \ V /| | | | | | |     | | | | | (_| |~
+ |_| |_|\_/ |_|_| |_| |_|     | |_|_|  \__,_|~
+                             _/ |            ~
+                            |__/             ~
+
+==============================================================================
+CONTENTS                                                  *nvim-jira-contents*
+
+   01. Intro ............................................... |nvim-jira-intro|
+   02. Features ......................................... |nvim-jira-features|
+   03. Configuration ............................... |nvim-jira-configuration|
+   04. Commands ......................................... |nvim-jira-commands|
+   05. Usage................................................ |nvim-jira-usage|
+   06. Key Bindings...................................|nvim-jira-key-bindings|
+   07. Customization ............................... |nvim-jira-customization|
+   08. Credits ........................................... |nvim-jira-credits|
+   09. Contributions ............................... |nvim-jira-contributions|
+   10. License ........................................... |nvim-jira-license|
+
+==============================================================================
+INTRODUCTION                                                 *nvim-jira-intro*
+
+nvim-jira is a plugin to manage your Jira tickets from nvim
+
+==============================================================================
+FEATURES                                                  *nvim-jira-features*
+
+* Fetches your assigned and watching issues from Jira
+* Shows you all the comment activity
+* Can post comments on the tickets
+
+==============================================================================
+CONFIGURATION                                        *nvim-jira-configuration*
+
+* Get API access token for JIRA and set it to "JIRA_TOKEN" environment
+  variable
+  export JIRA_TOKEN="RANDOM123"
+
+* Set Jira user name as "JIRA_USERNAME" environment variable
+  Eg: export JIRA_USERNAME="user@domain.com"
+
+* Set Jira host as "JIRA_HOST" environment variable
+  Eg: export JIRA_HOST="https://example.atlassian.net"
+
+* Install lua-cjson (using luarocks: luarocks install lua-cjson)
+* Install luasec (using luarocks: luarocks install luasec)
+
+You might have different Lua versions in your system. We need to install the
+modules for Lua shipped with nvim.
+
+Check the Lua version of nvim by:
+`:lua print(_VERSION)`
+
+Install modules for this version. Example:
+`luarocks --lua-version 5.1 install lua-cjson`
+
+==============================================================================
+COMMANDS                                                  *nvim-jira-commands*
+
+:Jira                                                                  *:Jira*
+  Fetches tickets assigned to you and tickets you are watching. (Tickets are
+  cached for the nvim session)
+
+:JiraReload                                                      *:JiraReload*
+  Reload the tickets. Works same as `:Jira` except it hits the API everytime
+
+==============================================================================
+USAGE                                                        *nvim-jira-usage*
+
+Call `:Jira` and get the list of Jira tickets.
+
+==============================================================================
+KEY BINDINGS                                          *nvim-jira-key-bindings*
+
+*This needs improvement*
+
+`<cr>`: <cr> on any of the ticket opens and shows the comment activity
+`\com`: Opens a new buffer to enter a new comment for the ticket
+`:w`: Publishes the comment to Jira
+
+==============================================================================
+CUSTOMIZATION                                        *nvim-jira-customization*
+
+IN-PROGRESS
+
+==============================================================================
+CREDITS                                                    *nvim-jira-credits*
+
+Rafał Camlet: https://github.com/rafcamlet/nvim-whid
+
+==============================================================================
+CONTRIBUTIONS                                        *nvim-jira-contributions*
+
+Contributions and pull requests are welcome.
+
+==============================================================================
+LICENSE                                                    *nvim-jira-license*
+
+MIT License. Copyright © 2020 Vipul Sharma
+
+ vim:tw=78:ts=8:ft=help:norl:
