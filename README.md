@@ -55,6 +55,8 @@ or check [here][0]
 | `Jira`               | Fetches tickets assigned to you and tickets you are watching. (Tickets are cached for the nvim session) |
 | `JiraReload`         | Reload the tickets. Works same as `:Jira` except it hits the API everytime                              |
 
+Check some keybindings in the documentation `:h nvim-jira`
+
 # Disclaimer
 
 I have created this plugin to learn how to use the Lua runtime embedded with

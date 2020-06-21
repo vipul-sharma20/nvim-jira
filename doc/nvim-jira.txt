@@ -82,6 +82,7 @@ KEY BINDINGS                                          *nvim-jira-key-bindings*
 
 `<cr>`: <cr> on any of the ticket opens and shows the comment activity
 `\com`: Opens a new buffer to enter a new comment for the ticket
+`\web`: Opens the ticket in browser
 `:w`: Publishes the comment to Jira
 
 ==============================================================================
