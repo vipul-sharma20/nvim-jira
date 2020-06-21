@@ -53,9 +53,18 @@ function Jira:getMyIssues (project)
     return responseTable.issues
 end
 
+function Jira:getIssueComments (issueId)
+    url = self.host .. string.format("/issue/%s/comment", issueId)
+    response, responseCode = self:httpGet(url)
+
+    local json = require('cjson')
+    local responseTable = json.decode(response)
+
+    return responseTable.comments
+end
+
 local function connect()
     jira = Jira:new{host = 'https://vernacular-ai.atlassian.net/rest/api/3'}
-    return jira:getMyIssues("PCK")
 end
 
 local api = vim.api
@@ -125,8 +134,8 @@ local function update_view(direction)
   position = position + direction
   if position < 0 then position = 0 end
 
-  jira = Jira:new{host = 'https://vernacular-ai.atlassian.net/rest/api/3'}
   if results == nil then
+    connect()
     results = jira:getMyIssues("PCK")
   end
 
@@ -144,12 +153,19 @@ end
 
 local function close_window()
   api.nvim_win_close(win, true)
+  buf = nil
+  win = nil
 end
 
-local function open_file()
-  local str = api.nvim_get_current_line()
-  close_window()
-  api.nvim_command('edit '..str)
+local function split (inputstr, sep)
+    if sep == nil then
+        sep = "%s"
+    end
+    local t={}
+    for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
+        table.insert(t, str)
+    end
+    return t
 end
 
 local function move_cursor()
@@ -162,8 +178,6 @@ local function set_mappings()
     ['['] = 'update_view(-1)',
     [']'] = 'update_view(1)',
     ['<cr>'] = 'open_file()',
-    h = 'update_view(-1)',
-    l = 'update_view(1)',
     q = 'close_window()',
     k = 'move_cursor()'
   }
@@ -174,7 +188,7 @@ local function set_mappings()
       })
   end
   local other_chars = {
-    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'i', 'n', 'o', 'p', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'
+    'a', 'c', 'g', 'i', 'n', 'o', 'p', 'r', 's', 't', 'v', 'x', 'y', 'z'
   }
   for k,v in ipairs(other_chars) do
     api.nvim_buf_set_keymap(buf, 'n', v, '', { nowait = true, noremap = true, silent = true })
@@ -183,13 +197,29 @@ local function set_mappings()
   end
 end
 
+local function init()
+    position = 0
+    open_window()
+    set_mappings()
+end
+
+local function open_file()
+  local s = api.nvim_get_current_line()
+
+  splits = split(s, '|')
+  close_window()
+  init()
+
+  response = jira:getIssueComments(splits[1]:gsub('%s+', ''))
+  local cjson = require "cjson"
+
+  api.nvim_buf_set_lines(buf, 0, 10, false, {cjson.encode(response)})
+end
+
 local function jira()
-  position = 0
-  open_window()
-  set_mappings()
-  update_view(0)
-  api.nvim_win_set_cursor(win, {4, 0})
-  -- connect()
+   init()
+   update_view(0)
+   api.nvim_win_set_cursor(win, {4, 0})
 end
 
 local function jiraReload()
