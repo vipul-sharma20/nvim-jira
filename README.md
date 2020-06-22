@@ -77,3 +77,11 @@ nvim to build plugins.  Things may look ugly and sub-optimal.
 
 
 [0]: https://github.com/vipul-sharma20/nvim-jira/tree/master/doc/nvim-jira.txt
+[1]: https://github.com/tpope/vim-pathogen
+[2]: https://github.com/Shougo/neobundle.vim
+[3]: https://github.com/VundleVim/Vundle.vim
+[4]: https://github.com/junegunn/vim-plug
+[5]: https://github.com/MarcWeber/vim-addon-manager
+[6]: https://github.com/Shougo/dein.vim
+[7]: https://github.com/k-takata/minpac/
+
