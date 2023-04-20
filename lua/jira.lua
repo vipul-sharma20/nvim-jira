@@ -1,6 +1,6 @@
 require("os")
 
-cjson = require("cjson")
+JSON = require("JSON")
 mime = require("mime")
 ltn12 = require("ltn12")
 io = require("io")
@@ -63,7 +63,7 @@ function Jira:get_my_issues(project)
     url = self.host .. "/search?maxResults=100&jql=watcher+=+currentuser()%26resolution=Unresolved%26project=" .. project
     response, response_code = self:http_get(url)
 
-    local response_table = cjson.decode(response)
+    local response_table = JSON:decode(response)
 
     return response_table.issues
 end
@@ -73,7 +73,7 @@ function Jira:get_issue_comments(issueId)
     url = self.host .. string.format("/issue/%s/comment", issueId)
     response, response_code = self:http_get(url)
 
-    local response_table = cjson.decode(response)
+    local response_table = JSON:decode(response)
 
     return response_table.comments
 end
